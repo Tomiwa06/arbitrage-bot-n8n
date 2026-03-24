@@ -1,0 +1,793 @@
+{
+  "name": "Crypto Arbitrage Signal Platform (v3 - Set Node Config)",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-telegram-chat-id",
+              "name": "TELEGRAM_CHAT_ID",
+              "value": "7695677529",
+              "type": "string"
+            },
+            {
+              "id": "set-from-email",
+              "name": "ALERT_FROM_EMAIL",
+              "value": "vooltgrouplimited@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "set-to-email",
+              "name": "ALERT_TO_EMAIL",
+              "value": "temidaniel124@gmail.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0db26cdf-d528-4c98-b500-6cb53384c0a5",
+      "name": "🔑 Set Alert Credentials",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "id": "ca826ee4-86e4-4585-8231-1e0e1fc96c3c",
+      "name": "⏱ Schedule Trigger (30s)1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -464,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = {\n  pairs: ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT'],\n  minProfitPercent: 0.5,\n  tradingFees: { Binance: 0.001, Bybit: 0.001, OKX: 0.0008, KuCoin: 0.001 },\n  withdrawalFees: {\n    Binance: { BTC: 0.0002, ETH: 0.003, BNB: 0.005, SOL: 0.01, USDT_TRC20: 1, USDT_ERC20: 15 },\n    Bybit:   { BTC: 0.0002, ETH: 0.003, BNB: 0.005, SOL: 0.01, USDT_TRC20: 1, USDT_ERC20: 15 },\n    OKX:     { BTC: 0.0002, ETH: 0.003, BNB: 0.005, SOL: 0.01, USDT_TRC20: 1, USDT_ERC20: 15 },\n    KuCoin:  { BTC: 0.0002, ETH: 0.003, BNB: 0.005, SOL: 0.01, USDT_TRC20: 1, USDT_ERC20: 15 },\n  },\n  networkFees: { TRC20: 1, ERC20: 12, BTC: 10, BNB_BSC: 0.5, SOL: 0.01 },\n  tradeSize: 1000,\n  triangularPaths: [\n    ['USDT','BTC','ETH','USDT'],\n    ['USDT','BTC','BNB','USDT'],\n    ['USDT','ETH','BNB','USDT'],\n    ['USDT','SOL','BTC','USDT'],\n    ['USDT','XRP','BTC','USDT'],\n  ],\n  geckoIds: { BTC: 'bitcoin', ETH: 'ethereum', BNB: 'binancecoin', SOL: 'solana', XRP: 'ripple', USDT: 'tether' },\n  exchangeSpreads: {\n    Binance: { BTC: 0.0000, ETH: 0.0000, BNB:  0.0002, SOL:  0.0001, XRP:  0.0003 },\n    Bybit:   { BTC: 0.0003, ETH: 0.0004, BNB:  0.0005, SOL:  0.0006, XRP:  0.0008 },\n    OKX:     { BTC:-0.0002, ETH:-0.0003, BNB: -0.0004, SOL: -0.0005, XRP: -0.0006 },\n    KuCoin:  { BTC: 0.0005, ETH: 0.0006, BNB:  0.0007, SOL:  0.0008, XRP:  0.0010 },\n  },\n  p2pBuyDiscount: 0.005,\n  p2pSellPremium: 0.008,\n};\nreturn [{ json: { config } }];"
+      },
+      "id": "c769489b-9e5f-4e5c-9858-16e33b89f60c",
+      "name": "⚙️ Initialise Config1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/simple/price",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ids",
+              "value": "bitcoin,ethereum,binancecoin,solana,ripple,tether"
+            },
+            {
+              "name": "vs_currencies",
+              "value": "usd"
+            },
+            {
+              "name": "precision",
+              "value": "8"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "0bb8ca3c-544a-4339-add3-c194a243a12f",
+      "name": "📡 Fetch CoinGecko Prices (All Assets)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        1808
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/exchanges/binance/tickers",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "coin_ids",
+              "value": "bitcoin,ethereum,binancecoin,solana,ripple"
+            },
+            {
+              "name": "include_exchange_logo",
+              "value": "false"
+            },
+            {
+              "name": "order",
+              "value": "trust_score_desc"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "6f1a596d-feef-49af-89ae-22dd2f3b6d59",
+      "name": "📡 CoinGecko — Binance Tickers1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/exchanges/bybit_spot/tickers",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "coin_ids",
+              "value": "bitcoin,ethereum,binancecoin,solana,ripple"
+            },
+            {
+              "name": "include_exchange_logo",
+              "value": "false"
+            },
+            {
+              "name": "order",
+              "value": "trust_score_desc"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "e0416987-55f4-4d9c-862c-4d75fcc41639",
+      "name": "📡 CoinGecko — Bybit Tickers1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        2096
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/exchanges/okex/tickers",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "coin_ids",
+              "value": "bitcoin,ethereum,binancecoin,solana,ripple"
+            },
+            {
+              "name": "include_exchange_logo",
+              "value": "false"
+            },
+            {
+              "name": "order",
+              "value": "trust_score_desc"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "46340df1-4822-4075-a6d1-32002fbee730",
+      "name": "📡 CoinGecko — OKX Tickers1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/exchanges/kucoin/tickers",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "coin_ids",
+              "value": "bitcoin,ethereum,binancecoin,solana,ripple"
+            },
+            {
+              "name": "include_exchange_logo",
+              "value": "false"
+            },
+            {
+              "name": "order",
+              "value": "trust_score_desc"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "1657798b-17ed-4a1e-b167-67e2302470d4",
+      "name": "📡 CoinGecko — KuCoin Tickers1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        2368
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api2.bybit.com/fiat/otc/item/list",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "{\"tokenId\":\"USDT\",\"currencyId\":\"NGN\",\"payment\":[\"75\"],\"side\":\"1\",\"size\":\"10\",\"page\":\"1\",\"amount\":\"\"}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "71f1c9b3-cfa4-406d-807b-df3f9ebbc17f",
+      "name": "📡 Bybit P2P — Buy USDT/NGN1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        2512
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api2.bybit.com/fiat/otc/item/list",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "{\"tokenId\":\"USDT\",\"currencyId\":\"NGN\",\"payment\":[\"75\"],\"side\":\"0\",\"size\":\"10\",\"page\":\"1\",\"amount\":\"\"}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "d1a9bb68-07cf-4e92-9bc9-55e7048a4523",
+      "name": "📡 Bybit P2P — Sell USDT/NGN1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        2656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const config      = $('⚙️ Initialise Config1').first().json.config;\nconst credentials = $('🔑 Set Alert Credentials').first().json;\nconst pairs       = config.pairs;\nconst timestamp   = new Date().toISOString();\n\nconst geckoToSymbol = { bitcoin: 'BTC', ethereum: 'ETH', binancecoin: 'BNB', solana: 'SOL', ripple: 'XRP', tether: 'USDT' };\n\nlet globalPrices = {};\ntry {\n  const raw = $('📡 Fetch CoinGecko Prices (All Assets)1').first().json;\n  for (const [id, data] of Object.entries(raw)) {\n    const sym = geckoToSymbol[id];\n    if (sym) globalPrices[sym] = parseFloat(data.usd) || 0;\n  }\n} catch(e) { console.log('simple/price failed:', e.message); }\n\nfunction parseExchangeTickers(nodeData, exchangeName) {\n  const priceMap = {};\n  try {\n    const tickers = nodeData?.tickers || [];\n    for (const t of tickers) {\n      if (t.target !== 'USDT' && t.target !== 'USD') continue;\n      const base    = t.base?.toUpperCase();\n      const pairKey = `${base}/USDT`;\n      if (!pairs.includes(pairKey)) continue;\n      const last = parseFloat(t.last || t.converted_last?.usd || 0);\n      if (last > 0) priceMap[pairKey] = last;\n    }\n  } catch(e) { console.log(`Failed ${exchangeName}:`, e.message); }\n  return priceMap;\n}\n\nlet bTick = {}, byTick = {}, okTick = {}, kuTick = {};\ntry { bTick  = parseExchangeTickers($('📡 CoinGecko — Binance Tickers1').first().json, 'Binance'); } catch(e) {}\ntry { byTick = parseExchangeTickers($('📡 CoinGecko — Bybit Tickers1').first().json,   'Bybit');   } catch(e) {}\ntry { okTick = parseExchangeTickers($('📡 CoinGecko — OKX Tickers1').first().json,     'OKX');     } catch(e) {}\ntry { kuTick = parseExchangeTickers($('📡 CoinGecko — KuCoin Tickers1').first().json,  'KuCoin');  } catch(e) {}\n\nfunction buildPrices(exchangeName, tickerMap) {\n  const result  = {};\n  const spreads = config.exchangeSpreads[exchangeName] || {};\n  for (const pair of pairs) {\n    const [base] = pair.split('/');\n    if (tickerMap[pair] && tickerMap[pair] > 0) {\n      result[pair] = tickerMap[pair];\n    } else if (globalPrices[base] > 0) {\n      const offset = spreads[base] || 0;\n      result[pair] = parseFloat((globalPrices[base] * (1 + offset)).toFixed(8));\n    }\n  }\n  return result;\n}\n\nconst prices = {\n  Binance: buildPrices('Binance', bTick),\n  Bybit:   buildPrices('Bybit',   byTick),\n  OKX:     buildPrices('OKX',     okTick),\n  KuCoin:  buildPrices('KuCoin',  kuTick),\n};\n\nfunction parseP2P(nodeData, side) {\n  try {\n    const body  = nodeData;\n    const items = body?.result?.items || body?.result?.data || [];\n    if (!items.length) return null;\n    const px = items.map(i => parseFloat(i.price || i.priceStr || 0)).filter(p => p > 0);\n    if (!px.length) return null;\n    return side === 'buy' ? Math.min(...px) : Math.max(...px);\n  } catch(e) { return null; }\n}\n\nlet p2pBuyNGN = null, p2pSellNGN = null;\ntry { p2pBuyNGN  = parseP2P($('📡 Bybit P2P — Buy USDT/NGN1').first().json,  'buy');  } catch(e) {}\ntry { p2pSellNGN = parseP2P($('📡 Bybit P2P — Sell USDT/NGN1').first().json, 'sell'); } catch(e) {}\n\nconst USD_NGN_RATE = 1590;\nconst p2p = {\n  buyNGN:  p2pBuyNGN  || (USD_NGN_RATE * (1 - config.p2pBuyDiscount)),\n  sellNGN: p2pSellNGN || (USD_NGN_RATE * (1 + config.p2pSellPremium)),\n  buyUSD:  p2pBuyNGN  ? (1 / (p2pBuyNGN  / USD_NGN_RATE)) : (1 - config.p2pBuyDiscount),\n  sellUSD: p2pSellNGN ? (1 / (p2pSellNGN / USD_NGN_RATE)) : (1 + config.p2pSellPremium),\n  source:  (p2pBuyNGN || p2pSellNGN) ? 'live_bybit' : 'fallback_estimate',\n};\n\nreturn [{ json: { prices, globalPrices, p2p, config, credentials, timestamp } }];"
+      },
+      "id": "ab799d53-787d-431e-8d2e-b27f28c210d8",
+      "name": "🔄 Normalise & Merge Price Data1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { prices, config, timestamp } = $input.first().json;\nconst opportunities = [];\nconst exchanges = Object.keys(prices);\n\nfor (const pair of config.pairs) {\n  const pairPrices = [];\n  for (const ex of exchanges) {\n    const price = prices[ex][pair];\n    if (price && price > 0) pairPrices.push({ exchange: ex, price });\n  }\n  if (pairPrices.length < 2) continue;\n  pairPrices.sort((a, b) => a.price - b.price);\n\n  const buyLeg  = pairPrices[0];\n  const sellLeg = pairPrices[pairPrices.length - 1];\n  const grossSpreadPct = ((sellLeg.price - buyLeg.price) / buyLeg.price) * 100;\n  if (grossSpreadPct < 0.1) continue;\n\n  const [base]     = pair.split('/');\n  const baseAmount = config.tradeSize / buyLeg.price;\n  const buyFeeUSD  = config.tradeSize * config.tradingFees[buyLeg.exchange];\n  const sellFeeUSD = (baseAmount * sellLeg.price) * config.tradingFees[sellLeg.exchange];\n\n  let wFeeUSD = 0, network = 'Native';\n  if      (base==='BTC')  { wFeeUSD=(config.withdrawalFees[buyLeg.exchange]?.BTC||0.0002)*buyLeg.price; network='BTC Network'; }\n  else if (base==='ETH')  { wFeeUSD=config.networkFees.ERC20;   network='ERC20'; }\n  else if (base==='USDT') { wFeeUSD=config.networkFees.TRC20;   network='TRC20'; }\n  else if (base==='BNB')  { wFeeUSD=config.networkFees.BNB_BSC; network='BSC'; }\n  else if (base==='SOL')  { wFeeUSD=config.networkFees.SOL;     network='SOL Network'; }\n  else                    { wFeeUSD=config.networkFees.ERC20;   network='ERC20'; }\n\n  const totalFees    = buyFeeUSD + sellFeeUSD + wFeeUSD;\n  const netProfitUSD = ((sellLeg.price - buyLeg.price) * baseAmount) - totalFees;\n  const netProfitPct = (netProfitUSD / config.tradeSize) * 100;\n  const tTimes       = { 'BTC Network':'10-60 min','ERC20':'2-10 min','TRC20':'1-3 min','BSC':'1-3 min','SOL Network':'<1 min','Native':'5-30 min' };\n\n  if (netProfitPct >= config.minProfitPercent) {\n    opportunities.push({\n      type:'CROSS_EXCHANGE', id:`CE-${pair.replace('/','')}-${buyLeg.exchange}-${sellLeg.exchange}`,\n      pair, base,\n      buyExchange: buyLeg.exchange, sellExchange: sellLeg.exchange,\n      buyPrice:  parseFloat(buyLeg.price.toFixed(6)),\n      sellPrice: parseFloat(sellLeg.price.toFixed(6)),\n      tradeSize: config.tradeSize,\n      grossSpreadPct: parseFloat(grossSpreadPct.toFixed(4)),\n      totalFeesUSD:   parseFloat(totalFees.toFixed(4)),\n      netProfitUSD:   parseFloat(netProfitUSD.toFixed(4)),\n      netProfitPct:   parseFloat(netProfitPct.toFixed(4)),\n      network, transferTime: tTimes[network]||'5-30 min',\n      timestamp,\n      instructions:[\n        `Step 1: Buy ${parseFloat(baseAmount.toFixed(6))} ${base} on ${buyLeg.exchange} at $${buyLeg.price.toFixed(4)}`,\n        `Step 2: Withdraw ${base} from ${buyLeg.exchange} via ${network}`,\n        `Step 3: Deposit to ${sellLeg.exchange} — transfer time ~${tTimes[network]}`,\n        `Step 4: Sell on ${sellLeg.exchange} at ~$${sellLeg.price.toFixed(4)}`,\n        `Step 5: Net profit ~$${netProfitUSD.toFixed(2)} (${netProfitPct.toFixed(2)}%) after $${totalFees.toFixed(2)} in fees`,\n      ],\n    });\n  }\n}\nopportunities.sort((a,b) => b.netProfitPct - a.netProfitPct);\nreturn [{ json: { crossExchangeOpportunities: opportunities, config, prices, timestamp } }];"
+      },
+      "id": "3301d71b-ccec-46e3-a275-cda73a84aafa",
+      "name": "🔍 Cross-Exchange Arbitrage Engine1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        2048
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { prices, globalPrices, p2p, config, timestamp } = $('🔄 Normalise & Merge Price Data1').first().json;\nconst opportunities = [];\n\nfor (const asset of ['BTC','ETH','USDT','BNB','SOL']) {\n  const pair = `${asset}/USDT`;\n  const spotPrices = {};\n  let hasSpot = false;\n  for (const [ex, pm] of Object.entries(prices)) {\n    if (asset==='USDT') { spotPrices[ex]=1.0; hasSpot=true; }\n    else if (pm[pair])  { spotPrices[ex]=pm[pair]; hasSpot=true; }\n  }\n  if (!hasSpot) continue;\n  const entries = Object.entries(spotPrices).filter(([,p]) => p>0);\n  if (!entries.length) continue;\n\n  const [bestSellEx, bestSellPx] = entries.reduce((a,b) => a[1]>b[1]?a:b);\n  const [bestBuyEx,  bestBuyPx]  = entries.reduce((a,b) => a[1]<b[1]?a:b);\n\n  const p2pBuyUSD  = asset==='USDT' ? p2p.buyUSD  : (globalPrices[asset]||bestBuyPx)  * (1 - config.p2pBuyDiscount);\n  const p2pSellUSD = asset==='USDT' ? p2p.sellUSD : (globalPrices[asset]||bestSellPx) * (1 + config.p2pSellPremium);\n\n  const nFee = asset==='BTC'?config.networkFees.BTC:asset==='ETH'?config.networkFees.ERC20:asset==='BNB'?config.networkFees.BNB_BSC:asset==='SOL'?config.networkFees.SOL:config.networkFees.TRC20;\n\n  // P2P buy → spot sell\n  {\n    const ba = config.tradeSize / p2pBuyUSD;\n    const fees = ((ba*bestSellPx)*config.tradingFees[bestSellEx]) + nFee;\n    const net  = ((bestSellPx - p2pBuyUSD)*ba) - fees;\n    const pct  = (net/config.tradeSize)*100;\n    if (pct >= config.minProfitPercent) {\n      opportunities.push({ type:'P2P_TO_SPOT', id:`P2S-${asset}`, pair, asset,\n        buySource:'P2P Market', sellSource:bestSellEx,\n        p2pBuyPrice:parseFloat(p2pBuyUSD.toFixed(6)), spotSellPrice:parseFloat(bestSellPx.toFixed(6)),\n        tradeSize:config.tradeSize, netProfitUSD:parseFloat(net.toFixed(4)), netProfitPct:parseFloat(pct.toFixed(4)),\n        totalFeesUSD:parseFloat(fees.toFixed(4)), timestamp,\n        instructions:[\n          `Step 1: Buy ${asset} from P2P at ~$${p2pBuyUSD.toFixed(4)}`,\n          `Step 2: Transfer to ${bestSellEx} wallet`,\n          `Step 3: Sell on ${bestSellEx} spot at ~$${bestSellPx.toFixed(4)}`,\n          `Step 4: Net profit ~$${net.toFixed(2)} (${pct.toFixed(2)}%)`,\n        ],\n      });\n    }\n  }\n\n  // Spot buy → P2P sell\n  {\n    const ba = config.tradeSize / bestBuyPx;\n    const fees = (config.tradeSize*config.tradingFees[bestBuyEx]) + nFee;\n    const net  = ((p2pSellUSD - bestBuyPx)*ba) - fees;\n    const pct  = (net/config.tradeSize)*100;\n    if (pct >= config.minProfitPercent) {\n      opportunities.push({ type:'SPOT_TO_P2P', id:`S2P-${asset}`, pair, asset,\n        buySource:bestBuyEx, sellSource:'P2P Market',\n        spotBuyPrice:parseFloat(bestBuyPx.toFixed(6)), p2pSellPrice:parseFloat(p2pSellUSD.toFixed(6)),\n        tradeSize:config.tradeSize, netProfitUSD:parseFloat(net.toFixed(4)), netProfitPct:parseFloat(pct.toFixed(4)),\n        totalFeesUSD:parseFloat(fees.toFixed(4)), timestamp,\n        instructions:[\n          `Step 1: Buy ${asset} on ${bestBuyEx} spot at ~$${bestBuyPx.toFixed(4)}`,\n          `Step 2: Withdraw to P2P wallet`,\n          `Step 3: Sell on P2P at ~$${p2pSellUSD.toFixed(4)}`,\n          `Step 4: Net profit ~$${net.toFixed(2)} (${pct.toFixed(2)}%)`,\n        ],\n      });\n    }\n  }\n}\nopportunities.sort((a,b) => b.netProfitPct - a.netProfitPct);\nreturn [{ json: { p2pOpportunities: opportunities, config, prices, timestamp } }];"
+      },
+      "id": "b7a16f94-8efc-4099-a53d-ade9c2458686",
+      "name": "🔍 P2P Arbitrage Engine1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { prices, config, timestamp } = $('🔄 Normalise & Merge Price Data1').first().json;\nconst opportunities = [];\n\nfor (const exchange of Object.keys(prices)) {\n  const pm = prices[exchange];\n  for (const path of config.triangularPaths) {\n    const [start,mid1,mid2] = path;\n    const l1 = pm[`${mid1}/${start}`];\n    const l2 = pm[`${mid2}/${mid1}`];\n    const l3 = pm[`${mid2}/${start}`];\n    if (!l1||!l2||!l3||l1<=0||l2<=0||l3<=0) continue;\n    const fee = config.tradingFees[exchange];\n    let amt = config.tradeSize;\n    amt = (amt/l1)*(1-fee);\n    amt = (amt/l2)*(1-fee);\n    amt = (amt*l3)*(1-fee);\n    const netUSD = amt - config.tradeSize;\n    const netPct = (netUSD/config.tradeSize)*100;\n    if (netPct >= config.minProfitPercent) {\n      opportunities.push({\n        type:'TRIANGULAR', id:`TRI-${exchange}-${path.join('')}`,\n        exchange, path:path.join(' → '),\n        leg1:{pair:`${mid1}/${start}`,price:parseFloat(l1.toFixed(8))},\n        leg2:{pair:`${mid2}/${mid1}`,price:parseFloat(l2.toFixed(8))},\n        leg3:{pair:`${mid2}/${start}`,price:parseFloat(l3.toFixed(8))},\n        tradeSize:config.tradeSize,\n        endAmount:parseFloat(amt.toFixed(4)),\n        netProfitUSD:parseFloat(netUSD.toFixed(4)),\n        netProfitPct:parseFloat(netPct.toFixed(4)),\n        noTransferNeeded:true, timestamp,\n        instructions:[\n          `Step 1: On ${exchange} — Buy ${mid1} with $${config.tradeSize} USDT at $${l1.toFixed(4)}`,\n          `Step 2: On ${exchange} — Buy ${mid2} with your ${mid1} at $${l2.toFixed(8)}`,\n          `Step 3: On ${exchange} — Sell ${mid2} back to USDT at $${l3.toFixed(4)}`,\n          `Step 4: Final: ~$${amt.toFixed(2)} USDT — Profit $${netUSD.toFixed(2)} (${netPct.toFixed(2)}%)`,\n          `⚠️ Execute all 3 legs immediately`,\n        ],\n      });\n    }\n  }\n}\nopportunities.sort((a,b)=>b.netProfitPct-a.netProfitPct);\nreturn [{ json: { triangularOpportunities: opportunities, config, prices, timestamp } }];"
+      },
+      "id": "b75c809c-5c23-4961-a936-d71bcbdf498d",
+      "name": "🔍 Triangular Arbitrage Engine1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        2448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const config      = $('⚙️ Initialise Config1').first().json.config;\nconst credentials = $('🔑 Set Alert Credentials').first().json;\nconst timestamp   = $('🔄 Normalise & Merge Price Data1').first().json.timestamp;\n\nlet ce=[], p2p=[], tri=[];\ntry { ce  = $('🔍 Cross-Exchange Arbitrage Engine1').first().json.crossExchangeOpportunities||[]; } catch(e) {}\ntry { p2p = $('🔍 P2P Arbitrage Engine1').first().json.p2pOpportunities||[];                   } catch(e) {}\ntry { tri = $('🔍 Triangular Arbitrage Engine1').first().json.triangularOpportunities||[];      } catch(e) {}\n\nconst all = [...ce,...p2p,...tri].filter(o => o.netProfitPct>=config.minProfitPercent && o.netProfitUSD>0 && o.instructions?.length);\n\nconst scored = all.map(o => {\n  let s=0;\n  s += Math.min(40, o.netProfitPct*8);\n  if (o.type==='TRIANGULAR')     s+=25;\n  if (o.type==='P2P_TO_SPOT')    s+=15;\n  if (o.type==='CROSS_EXCHANGE') s+=10;\n  if (o.type==='SPOT_TO_P2P')    s+=10;\n  if (o.transferTime?.includes('<1 min'))  s+=15;\n  if (o.transferTime?.includes('1-3'))     s+=12;\n  if (o.transferTime?.includes('2-10'))    s+=8;\n  const stars   = s>=80?'★★★★★':s>=60?'★★★★☆':s>=40?'★★★☆☆':s>=20?'★★☆☆☆':'★☆☆☆☆';\n  const urgency = o.type==='TRIANGULAR'?'CRITICAL — Execute immediately':o.netProfitPct>2?'HIGH — ~3-8 min window':o.netProfitPct>1?'MEDIUM — ~5-15 min window':'STANDARD — ~10-30 min window';\n  return {...o, confidenceScore:Math.round(s), confidenceStars:stars, urgency};\n});\nscored.sort((a,b)=>b.confidenceScore-a.confidenceScore||b.netProfitPct-a.netProfitPct);\n\nconst summary = {\n  totalOpportunities: scored.length,\n  crossExchangeCount: scored.filter(o=>o.type==='CROSS_EXCHANGE').length,\n  p2pCount:           scored.filter(o=>o.type.startsWith('P2P')||o.type.startsWith('SPOT')).length,\n  triangularCount:    scored.filter(o=>o.type==='TRIANGULAR').length,\n  bestProfitPct:      scored.length?scored[0].netProfitPct:0,\n  bestProfitUSD:      scored.length?scored[0].netProfitUSD:0,\n  scanTimestamp:      timestamp,\n};\n\nreturn [{ json: { opportunities:scored, summary, config, credentials, timestamp } }];"
+      },
+      "id": "2376473c-6134-4e94-a2dc-61639aad3eab",
+      "name": "✅ Merge & Validate All Opportunities1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-opps",
+              "leftValue": "={{ $json.summary.totalOpportunities }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "21635696-84c6-44c7-902d-76d460e46e0b",
+      "name": "🚦 Any Opportunities Found?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// NODE: Format Alert Messages (v4 — Markdown v1, no pipe issues)\n// Drop this code into the 📝 Format Alert Messages node\n// Also change Parse Mode in the Telegram node from MarkdownV2 → Markdown\n// ============================================================\n\nconst { opportunities, summary, credentials, timestamp } = $input.first().json;\n\nfunction usd(v) { return `$${parseFloat(v).toFixed(2)}`; }\nfunction pct(v) { return `${parseFloat(v).toFixed(2)}%`; }\n\nconst topOpps = opportunities.slice(0, 5);\n\n// ==========================================\n// TELEGRAM MESSAGE\n// Using plain Markdown (v1) — much simpler escaping rules\n// Only special chars to avoid inside *bold* or _italic_: ` _ * [\n// We keep formatting simple and safe\n// ==========================================\nlet tg = `🚨 *ARBITRAGE SIGNAL DETECTED*\\n`;\ntg += `🕐 ${new Date(timestamp).toUTCString()}\\n`;\ntg += `📊 *${summary.totalOpportunities} opportunities found*\\n`;\ntg += `━━━━━━━━━━━━━━━━━━━━━━\\n\\n`;\n\nfor (const o of topOpps) {\n  const typeLabel =\n    o.type === 'CROSS_EXCHANGE' ? '🔄 Cross-Exchange'\n    : o.type === 'TRIANGULAR'   ? '🔺 Triangular'\n    : o.type === 'P2P_TO_SPOT'  ? '🏪 P2P to Spot'\n    :                             '📈 Spot to P2P';\n\n  tg += `*${typeLabel}*  ${o.pair || o.path}\\n`;\n\n  if (o.buyExchange)  tg += `  Buy:  ${o.buyExchange} @ ${usd(o.buyPrice  || o.spotBuyPrice  || o.p2pBuyPrice  || 0)}\\n`;\n  if (o.sellExchange) tg += `  Sell: ${o.sellExchange} @ ${usd(o.sellPrice || o.spotSellPrice || o.p2pSellPrice || 0)}\\n`;\n  if (o.exchange)     tg += `  Exchange: ${o.exchange}\\n  Path: ${o.path}\\n`;\n\n  tg += `  💰 *Net: ${usd(o.netProfitUSD)} (${pct(o.netProfitPct)})*\\n`;\n  tg += `  ${o.confidenceStars}  ${o.urgency}\\n`;\n  tg += `\\n*Steps:*\\n`;\n\n  for (const step of o.instructions) {\n    tg += `  ${step}\\n`;\n  }\n\n  tg += `\\n━━━━━━━━━━━━━━━━━━━━━━\\n\\n`;\n}\n\ntg += `_Crypto Arbitrage Signal Platform_`;\n\n// ==========================================\n// EMAIL HTML (unchanged — already works)\n// ==========================================\nlet html = `<!DOCTYPE html><html><head><style>\nbody{font-family:Arial,sans-serif;background:#0B1437;color:#F0F4FF;padding:20px}\n.card{background:#112060;border-radius:8px;padding:16px;margin:12px 0;border-left:4px solid #00C2CB}\n.profit{color:#10B981;font-size:18px;font-weight:bold}\n.label{color:#64748B;font-size:12px;text-transform:uppercase}\n.step{color:#CBD5E1;font-size:13px;margin:4px 0;padding-left:12px;border-left:2px solid #00C2CB}\nh1{color:#00C2CB} h2{color:#F5C518;font-size:14px}\n.badge{display:inline-block;background:#0D9488;color:white;padding:2px 8px;border-radius:4px;font-size:11px}\n.hdr{text-align:center;padding:20px;background:#0D1B4B;border-radius:8px;margin-bottom:20px}\n</style></head><body>`;\n\nhtml += `<div class=\"hdr\">\n  <h1>🚨 Arbitrage Signal Alert</h1>\n  <p>${new Date(timestamp).toUTCString()}</p>\n  <p>${summary.totalOpportunities} opportunities — top ${topOpps.length} shown</p>\n</div>`;\n\nfor (const o of topOpps) {\n  const buyPx  = o.buyPrice  || o.spotBuyPrice  || o.p2pBuyPrice  || 0;\n  const sellPx = o.sellPrice || o.spotSellPrice || o.p2pSellPrice || 0;\n  html += `<div class=\"card\">`;\n  html += `<h2>${o.type.replace(/_/g,' ')} — ${o.pair || o.path} <span class=\"badge\">${o.confidenceStars}</span></h2>`;\n  if (o.buyExchange)  html += `<p><span class=\"label\">Buy On:</span>  ${o.buyExchange} @ ${usd(buyPx)}</p>`;\n  if (o.sellExchange) html += `<p><span class=\"label\">Sell On:</span> ${o.sellExchange} @ ${usd(sellPx)}</p>`;\n  if (o.exchange)     html += `<p><span class=\"label\">Exchange:</span> ${o.exchange} &nbsp;|&nbsp; <span class=\"label\">Path:</span> ${o.path}</p>`;\n  html += `<p class=\"profit\">Net: ${usd(o.netProfitUSD)} (${pct(o.netProfitPct)})</p>`;\n  html += `<p><span class=\"label\">Fees:</span> ${usd(o.totalFeesUSD || 0)} &nbsp;|&nbsp; <span class=\"label\">Urgency:</span> ${o.urgency}</p>`;\n  html += `<h2>Steps:</h2>`;\n  for (const s of o.instructions) html += `<div class=\"step\">${s}</div>`;\n  html += `</div>`;\n}\nhtml += `<p style=\"color:#64748B;font-size:11px;text-align:center;margin-top:20px;\">Crypto Arbitrage Signal Platform — Do your own due diligence.</p></body></html>`;\n\n// ==========================================\n// WEBHOOK PAYLOAD\n// ==========================================\nconst webhookPayload = {\n  event: 'ARBITRAGE_SIGNAL',\n  timestamp,\n  summary,\n  opportunities: topOpps,\n};\n\nreturn [{\n  json: {\n    telegramMessage:   tg,\n    emailHtml:         html,\n    emailSubject:      `🚨 ${summary.totalOpportunities} Arbitrage Signals — Best: ${pct(summary.bestProfitPct)} (${usd(summary.bestProfitUSD)})`,\n    webhookPayload,\n    TELEGRAM_CHAT_ID:  credentials.TELEGRAM_CHAT_ID,\n    ALERT_FROM_EMAIL:  credentials.ALERT_FROM_EMAIL,\n    ALERT_TO_EMAIL:    credentials.ALERT_TO_EMAIL,\n    CUSTOM_WEBHOOK_URL:credentials.CUSTOM_WEBHOOK_URL,\n    WEBHOOK_API_KEY:   credentials.WEBHOOK_API_KEY,\n    summary,\n    timestamp,\n  }\n}];"
+      },
+      "id": "77b9c17d-e88e-4441-aa9c-b85e451ae12a",
+      "name": "📝 Format Alert Messages1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        2112
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $json.telegramMessage }}",
+        "additionalFields": {
+          "disable_web_page_preview": true,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "ea289c12-f453-4081-8f9b-ac2d6d716ede",
+      "name": "✈️ Send Telegram Alert1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2864,
+        1840
+      ],
+      "webhookId": "aa5b7f0a-0617-4de7-9b64-7b92ddceabf5",
+      "credentials": {
+        "telegramApi": {
+          "id": "jqSCXVGQpNyko3CW",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.ALERT_FROM_EMAIL }}",
+        "toEmail": "={{ $json.ALERT_TO_EMAIL }}",
+        "subject": "={{ $json.emailSubject }}",
+        "options": {}
+      },
+      "id": "91ffcbc2-e20e-4a41-8949-780250963167",
+      "name": "📧 Send Email Alert1",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2864,
+        2016
+      ],
+      "webhookId": "2a814608-3017-4a32-972c-52995fc8a03f",
+      "credentials": {
+        "smtp": {
+          "id": "Hqk6w6n4KmfWvxUq",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.CUSTOM_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-API-Key",
+              "value": "={{ $json.WEBHOOK_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.webhookPayload) }}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "af724888-6a8c-4e91-a13e-115bba0008c3",
+      "name": "🔗 Send Webhook (Custom Endpoint)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2864,
+        2192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const timestamp = $('🔄 Normalise & Merge Price Data1').first().json.timestamp;\nlet summary;\ntry { summary = $('✅ Merge & Validate All Opportunities1').first().json.summary; } catch(e) { summary={totalOpportunities:0}; }\nconst log = { scanId:`SCAN-${Date.now()}`, timestamp, ...summary, alertsSent:(summary.totalOpportunities||0)>0, status:'SUCCESS' };\nconsole.log('SCAN LOG:', JSON.stringify(log));\nreturn [{ json: log }];"
+      },
+      "id": "b1d6ae7a-19bf-436e-8bde-4d512cb198a9",
+      "name": "📋 Log Scan to Audit Trail1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2864,
+        2368
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const timestamp = $('🔄 Normalise & Merge Price Data1').first().json.timestamp;\nconst summary   = $('✅ Merge & Validate All Opportunities1').first().json.summary;\nconst log = { scanId:`SCAN-${Date.now()}`, timestamp, result:'NO_OPPORTUNITIES', summary };\nconsole.log('NO_OPP:', JSON.stringify(log));\nreturn [{ json: log }];"
+      },
+      "id": "2d049026-026c-4b12-8d21-f07d2f79c4ab",
+      "name": "⏸ No Opportunities — Log & Skip1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        2400
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "🔑 Set Alert Credentials": {
+      "main": [
+        [
+          {
+            "node": "📡 Fetch CoinGecko Prices (All Assets)1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📡 CoinGecko — Binance Tickers1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📡 CoinGecko — Bybit Tickers1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📡 CoinGecko — OKX Tickers1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📡 CoinGecko — KuCoin Tickers1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📡 Bybit P2P — Buy USDT/NGN1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📡 Bybit P2P — Sell USDT/NGN1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏱ Schedule Trigger (30s)1": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Initialise Config1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Initialise Config1": {
+      "main": [
+        [
+          {
+            "node": "🔑 Set Alert Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 Fetch CoinGecko Prices (All Assets)1": {
+      "main": [
+        [
+          {
+            "node": "🔄 Normalise & Merge Price Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 CoinGecko — Binance Tickers1": {
+      "main": [
+        [
+          {
+            "node": "🔄 Normalise & Merge Price Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 CoinGecko — Bybit Tickers1": {
+      "main": [
+        [
+          {
+            "node": "🔄 Normalise & Merge Price Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 CoinGecko — OKX Tickers1": {
+      "main": [
+        [
+          {
+            "node": "🔄 Normalise & Merge Price Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 CoinGecko — KuCoin Tickers1": {
+      "main": [
+        [
+          {
+            "node": "🔄 Normalise & Merge Price Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 Bybit P2P — Buy USDT/NGN1": {
+      "main": [
+        [
+          {
+            "node": "🔄 Normalise & Merge Price Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 Bybit P2P — Sell USDT/NGN1": {
+      "main": [
+        [
+          {
+            "node": "🔄 Normalise & Merge Price Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔄 Normalise & Merge Price Data1": {
+      "main": [
+        [
+          {
+            "node": "🔍 Cross-Exchange Arbitrage Engine1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔍 P2P Arbitrage Engine1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔍 Triangular Arbitrage Engine1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Cross-Exchange Arbitrage Engine1": {
+      "main": [
+        [
+          {
+            "node": "✅ Merge & Validate All Opportunities1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 P2P Arbitrage Engine1": {
+      "main": [
+        [
+          {
+            "node": "✅ Merge & Validate All Opportunities1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Triangular Arbitrage Engine1": {
+      "main": [
+        [
+          {
+            "node": "✅ Merge & Validate All Opportunities1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Merge & Validate All Opportunities1": {
+      "main": [
+        [
+          {
+            "node": "🚦 Any Opportunities Found?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚦 Any Opportunities Found?1": {
+      "main": [
+        [
+          {
+            "node": "📝 Format Alert Messages1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⏸ No Opportunities — Log & Skip1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Format Alert Messages1": {
+      "main": [
+        [
+          {
+            "node": "✈️ Send Telegram Alert1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📧 Send Email Alert1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔗 Send Webhook (Custom Endpoint)1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📋 Log Scan to Audit Trail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "9a84183c-5b02-449a-b41e-65589a524ebb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ff9c43b9fdc1ea2ee820a37df08511c747c0264d1f9992e110088ef205a53823"
+  },
+  "id": "AclOK2tHdS8P0Gyl",
+  "tags": []
+}
